@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keyport Settings</title>
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body class="settings-body">
+    <div class="window">
+      <div class="titlebar" data-tauri-drag-region>
+        <div class="title">
+          <span class="title-ring"></span>
+          <span class="title-text">keyport</span>
+          <span class="title-sub">settings</span>
+        </div>
+        <button id="close-btn" class="icon-btn" title="Close">✕</button>
+      </div>
+
+      <div class="content">
+        <!-- Add a shortcut -->
+        <section class="card">
+          <h2>Add a shortcut</h2>
+
+          <label class="field-label">5-character key</label>
+          <input
+            id="new-key"
+            class="text-input mono"
+            maxlength="5"
+            spellcheck="false"
+            autocomplete="off"
+            placeholder="e.g. a4g56"
+          />
+          <div id="key-msg" class="msg"></div>
+
+          <label class="field-label">Opens a…</label>
+          <div class="segment">
+            <button class="seg-btn active" data-kind="folder">Folder</button>
+            <button class="seg-btn" data-kind="app">App</button>
+          </div>
+
+          <div id="folder-pane" class="pane">
+            <button id="browse-btn" class="btn-ghost">Browse folder…</button>
+            <div id="folder-path" class="selected-path muted">No folder selected</div>
+          </div>
+
+          <div id="app-pane" class="pane hidden">
+            <input id="app-search" class="text-input" placeholder="Search installed apps…" />
+            <div id="app-list" class="app-list"></div>
+            <div id="app-selected" class="selected-path muted">No app selected</div>
+          </div>
+
+          <button id="add-btn" class="btn-primary">Add shortcut</button>
+        </section>
+
+        <!-- Your shortcuts -->
+        <section class="card">
+          <h2>Your shortcuts</h2>
+          <div id="shortcut-list" class="shortcut-list"></div>
+        </section>
+
+        <!-- Appearance -->
+        <section class="card">
+          <h2>Appearance</h2>
+          <div class="row-between">
+            <label class="field-label" style="margin: 0">Ring size</label>
+            <span id="ring-size-val" class="mono">100px</span>
+          </div>
+          <input id="ring-size" type="range" min="40" max="200" step="1" value="100" class="slider" />
+        </section>
+
+        <!-- Startup -->
+        <section class="card">
+          <div class="row-between">
+            <div>
+              <h2 class="tight">Start on login</h2>
+              <div class="muted small" style="margin-top: 4px">
+                Launch Keyport automatically when Windows starts.
+              </div>
+            </div>
+            <label class="switch">
+              <input id="autostart" type="checkbox" />
+              <span class="track"></span>
+            </label>
+          </div>
+        </section>
+
+        <div class="footer">
+          <button id="reset-btn" class="btn-ghost">Reset ring position</button>
+          <button id="quit-btn" class="btn-danger">Quit Keyport</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/settings.js"></script>
+  </body>
+</html>

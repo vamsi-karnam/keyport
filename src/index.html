@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keyport</title>
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body class="overlay-body">
+    <!-- Fullscreen click-through canvas used only during the launch animation -->
+    <canvas id="vacuum" class="hidden"></canvas>
+
+    <div id="stage">
+      <div id="ring" class="ring" title="Click to enter a key • drag to move • right-click or tray for Settings">
+        <div class="ring-core">
+          <div class="spin"></div>
+          <div class="void"></div>
+          <div class="nebula"></div>
+        </div>
+      </div>
+
+      <div id="entry" class="entry">
+        <button id="entry-close" class="entry-close" type="button" title="Close (Esc)">✕</button>
+        <div class="entry-hint" id="entry-hint">enter a 5-character key</div>
+        <div class="entry-row">
+          <input
+            id="key-input"
+            type="text"
+            maxlength="5"
+            spellcheck="false"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            placeholder="•••••"
+          />
+          <button id="enter-btn" type="button">Enter</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/vacuum.js"></script>
+    <script src="assets/ring.js"></script>
+  </body>
+</html>

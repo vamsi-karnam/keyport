@@ -1,0 +1,33 @@
+# ---- Rust / Cargo ----
+/src-tauri/target/
+**/*.rs.bk
+*.pdb
+
+# ---- Tauri generated ----
+# Regenerated on every build from tauri.conf.json + capabilities.
+/src-tauri/gen/
+
+# ---- Local app state (never commit a user's shortcuts) ----
+# Config lives in %APPDATA%\com.keyport.app, but ignore any stray copies.
+config.json
+
+# ---- Node (only if a tool is ever added; not needed to build Keyport) ----
+node_modules/
+dist/
+
+# ---- OS / editor cruft ----
+# Windows
+Thumbs.db
+Desktop.ini
+# macOS
+.DS_Store
+# Linux
+*~
+.directory
+.Trash-*
+# editors
+/.vscode/
+/.idea/
+*.swp
+*.swo
+*.log

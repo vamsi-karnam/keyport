@@ -1,0 +1,515 @@
+/* ===========================================================================
+   Keyport — shared styles for the ring overlay and the settings window.
+   Typography prefers JetBrains Mono / IBM Plex Sans when installed, and falls
+   back to first-party Windows fonts so the app stays offline and lightweight.
+   =========================================================================== */
+
+:root {
+  --gold-1: #f6dd8c;
+  --gold-2: #c8962e;
+  --gold-glow: rgba(240, 200, 110, 0.55);
+  --void: #05060a;
+
+  --ocean-1: #2e6bff;
+  --ocean-2: #6bb2ff;
+  --ocean-glow: rgba(70, 140, 255, 0.55);
+
+  --err: #e0555c;
+  --err-glow: rgba(200, 45, 55, 0.5);
+  --ok: #46d19b;
+
+  --text: #e9ecf3;
+  --muted: #99a2b3;
+
+  --glass: linear-gradient(150deg, rgba(24, 27, 36, 0.82), rgba(12, 14, 20, 0.72));
+  --glass-strong: linear-gradient(160deg, rgba(22, 25, 34, 0.94), rgba(10, 12, 18, 0.92));
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --card: rgba(255, 255, 255, 0.035);
+  --card-border: rgba(255, 255, 255, 0.07);
+
+  --font-title: "JetBrains Mono", "Cascadia Code", ui-monospace, Consolas, monospace;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --rs: 100px;  /* visible ring diameter (set live from settings) */
+  --rim: calc(var(--rs) * 0.09); /* golden rim thickness (~9% of diameter) */
+  --hit: 112px; /* invisible grab/click zone */
+  --rx: 74px;   /* ring centre X within the window */
+  --ry: 74px;   /* ring centre Y within the window */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ===========================  RING OVERLAY  ============================== */
+
+.overlay-body { cursor: default; }
+
+#vacuum {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+#vacuum.hidden { display: none; }
+
+#stage { position: fixed; inset: 0; z-index: 2; }
+
+.ring {
+  position: absolute;
+  left: var(--rx);
+  top: var(--ry);
+  width: var(--hit);
+  height: var(--hit);
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.ring-core {
+  position: relative;
+  width: var(--rs);
+  height: var(--rs);
+  border-radius: 50%;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  /* Outer glow scales with the ring so it always looks right. */
+  filter: drop-shadow(0 0 calc(var(--rs) * 0.1) var(--gold-glow));
+}
+
+/* Golden rim: a rich, multi-stop conic disc (metallic shimmer) with the void
+   stacked on top, leaving a proportional gold ring around the edge. */
+.spin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+      #8a6a1e, #f6dd8c, #fff6db, #e6b955, #b98a2c,
+      #8a6a1e, #d9ad46, #fff2c8, #a87f28, #8a6a1e);
+  animation: spin 7s linear infinite;
+}
+
+.void {
+  position: absolute;
+  inset: var(--rim);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #0d1120 0%, #05060a 62%, #010207 100%);
+  box-shadow: inset 0 0 calc(var(--rs) * 0.14) rgba(0, 0, 0, 0.95),
+    inset 0 calc(var(--rs) * 0.02) calc(var(--rs) * 0.05) rgba(0, 0, 0, 0.85);
+}
+
+/* Blue nebula that breathes while the key box is open. */
+.nebula {
+  position: absolute;
+  inset: var(--rim);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%,
+      rgba(150, 200, 255, 0.95),
+      rgba(60, 120, 255, 0.55) 42%,
+      rgba(24, 46, 130, 0.25) 70%,
+      transparent 76%);
+  opacity: 0;
+}
+
+/* Static top-lit gloss so the ring reads like polished glass, not a flat disc. */
+.ring-core::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(125% 90% at 50% 10%,
+      rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 44%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ring.standby .nebula { animation: nebula 1.7s ease-in-out infinite; }
+.ring.standby .ring-core { filter: drop-shadow(0 0 calc(var(--rs) * 0.14) var(--ocean-glow)); }
+
+/* Aggressive, accelerating spin during launch. */
+.ring.launching .spin {
+  animation: spin-accel 2.6s cubic-bezier(0.5, 0, 0.9, 1) forwards;
+}
+.ring.launching .ring-core {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 calc(var(--rs) * 0.22) var(--gold-glow));
+}
+.ring.launching .void { background: radial-gradient(circle at 50% 50%, #01030a, #000 70%); }
+.ring.launching .nebula { opacity: 0; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin-accel {
+  0%   { transform: rotate(0deg); }
+  30%  { transform: rotate(240deg); }
+  60%  { transform: rotate(660deg); }
+  100% { transform: rotate(2340deg); }
+}
+@keyframes nebula {
+  0%, 100% { opacity: 0.5; transform: scale(0.88); }
+  50%      { opacity: 1;   transform: scale(1.12); }
+}
+
+/* Key-entry glass pill */
+.entry {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px) scale(0.98);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+.entry.show { opacity: 1; visibility: visible; transform: none; }
+.entry.shake { animation: shake 0.4s; }
+
+/* Reliable close affordance for the key box (independent of focus behaviour). */
+.entry-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  z-index: 4;
+}
+.entry-close:hover { background: rgba(224, 85, 92, 0.28); color: #ffd7d9; }
+
+.entry-hint {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+  padding-left: 3px;
+}
+.entry-hint.ok { color: var(--ok); }
+.entry-hint.err { color: var(--err); }
+
+.entry-row { display: flex; gap: 10px; align-items: center; }
+
+#key-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-title);
+  font-size: 20px;
+  letter-spacing: 8px;
+  text-align: center;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px 10px 20px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#key-input::placeholder { color: #4a5163; letter-spacing: 8px; }
+#key-input:focus { border-color: var(--ocean-2); box-shadow: 0 0 0 3px rgba(70, 140, 255, 0.18); }
+#key-input.valid { border-color: var(--ok); box-shadow: 0 0 0 3px rgba(70, 209, 155, 0.2); }
+#key-input.invalid { border-color: var(--err); box-shadow: 0 0 0 3px var(--err-glow); }
+
+#enter-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  color: #061029;
+  background: linear-gradient(160deg, var(--ocean-2), var(--ocean-1));
+  border: none;
+  border-radius: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(46, 107, 255, 0.4);
+  transition: transform 0.1s, box-shadow 0.15s, filter 0.15s;
+}
+#enter-btn:hover { filter: brightness(1.08); box-shadow: 0 6px 18px rgba(46, 107, 255, 0.55); }
+#enter-btn:active { transform: translateY(1px) scale(0.98); }
+
+@keyframes shake {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+/* ===========================  SETTINGS WINDOW  ========================== */
+
+/* Settings is a normal decorated, OPAQUE window (native title bar + close).
+   The solid dark background guarantees it never renders as a blank white box. */
+.settings-body {
+  padding: 0;
+  background: radial-gradient(130% 100% at 50% 0%, #171b26 0%, #0c0e15 58%, #090a10 100%);
+}
+
+.window {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.titlebar {
+  height: 48px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.title { display: flex; align-items: baseline; gap: 8px; pointer-events: none; }
+.title-ring {
+  width: 12px; height: 12px; border-radius: 50%;
+  align-self: center;
+  background: radial-gradient(circle at 50% 40%, var(--void) 55%, transparent 56%),
+             conic-gradient(from 0deg, var(--gold-2), var(--gold-1), var(--gold-2));
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+.title-text { font-family: var(--font-title); font-weight: 700; font-size: 15px; letter-spacing: 0.5px; }
+.title-sub { font-family: var(--font-body); font-size: 12px; color: var(--muted); }
+
+.content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; color: var(--text); }
+.card h2.tight { margin: 0; }
+
+.field-label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+.card > .field-label:first-of-type { margin-top: 0; }
+
+.text-input {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.text-input:focus { border-color: var(--ocean-2); box-shadow: 0 0 0 3px rgba(70, 140, 255, 0.16); }
+.text-input.mono { font-family: var(--font-title); letter-spacing: 4px; }
+
+.msg { min-height: 15px; font-size: 11px; margin-top: 6px; }
+.msg.ok { color: var(--ok); }
+.msg.err { color: var(--err); }
+.msg.muted { color: var(--muted); }
+
+/* segmented Folder / App control */
+.segment {
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 11px;
+}
+.seg-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.seg-btn.active { color: var(--text); background: linear-gradient(160deg, rgba(70, 140, 255, 0.35), rgba(46, 107, 255, 0.25)); }
+
+.pane { margin-top: 12px; }
+.pane.hidden { display: none; }
+
+.selected-path {
+  margin-top: 8px;
+  font-size: 12px;
+  word-break: break-all;
+  color: var(--text);
+}
+.selected-path.muted { color: var(--muted); }
+
+.app-list {
+  margin-top: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.24);
+}
+.app-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+.app-item:last-child { border-bottom: none; }
+.app-item:hover { background: rgba(255, 255, 255, 0.05); }
+.app-item.sel { background: linear-gradient(160deg, rgba(70, 140, 255, 0.28), rgba(46, 107, 255, 0.18)); color: var(--text); }
+.loading { padding: 14px; font-size: 12px; color: var(--muted); text-align: center; }
+
+/* buttons */
+.btn-primary, .btn-ghost, .btn-danger {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 11px;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s, filter 0.15s, background 0.15s;
+}
+.btn-primary {
+  margin-top: 16px;
+  width: 100%;
+  color: #061029;
+  border: none;
+  background: linear-gradient(160deg, var(--ocean-2), var(--ocean-1));
+  box-shadow: 0 4px 14px rgba(46, 107, 255, 0.4);
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-ghost {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.09); }
+.btn-danger {
+  color: #ffd7d9;
+  background: rgba(180, 40, 48, 0.22);
+  border: 1px solid rgba(224, 85, 92, 0.4);
+}
+.btn-danger:hover { background: rgba(180, 40, 48, 0.34); }
+
+.icon-btn {
+  font-size: 13px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+.icon-btn.del:hover { background: rgba(180, 40, 48, 0.3); color: #ffd7d9; }
+
+/* shortcut list */
+.shortcut-list { display: flex; flex-direction: column; gap: 8px; }
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.key-chip {
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--gold-1);
+  background: rgba(200, 150, 46, 0.12);
+  border: 1px solid rgba(240, 200, 110, 0.25);
+  border-radius: 8px;
+  padding: 5px 9px;
+}
+.sc-label { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-kind { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); }
+.sc-kind.folder { color: #9ecbff; }
+.sc-kind.app { color: #f6dd8c; }
+
+/* misc */
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mono { font-family: var(--font-title); }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.tight { margin: 0; }
+.hidden { display: none; }
+
+/* range slider */
+.slider {
+  width: 100%;
+  margin-top: 10px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, var(--gold-1), var(--gold-2));
+  box-shadow: 0 0 8px var(--gold-glow);
+  cursor: pointer;
+}
+
+/* toggle switch */
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; flex: 0 0 auto; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.14);
+  transition: background 0.2s;
+}
+.switch .track::before {
+  content: "";
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #e9ecf3;
+  transition: transform 0.2s;
+}
+.switch input:checked + .track { background: linear-gradient(160deg, var(--ocean-2), var(--ocean-1)); }
+.switch input:checked + .track::before { transform: translateX(20px); }
+
+.footer { display: flex; gap: 10px; }
+.footer .btn-ghost { flex: 1; }
+
+/* scrollbars */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); background-clip: padding-box; }

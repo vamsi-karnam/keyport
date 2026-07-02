@@ -1,0 +1,32 @@
+[package]
+name = "keyport"
+version = "0.1.0"
+description = "A tiny always-on-top portal that launches apps and folders from 5-character keys"
+authors = ["Keyport"]
+edition = "2021"
+rust-version = "1.77"
+
+# Single desktop binary. Keeping this as a plain bin (no lib/mobile split)
+# is part of staying lightweight for a Windows-only tool.
+[[bin]]
+name = "keyport"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-autostart = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Size-first release profile: strip symbols, optimise for size, fat LTO,
+# single codegen unit and abort-on-panic to shave the binary down.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
