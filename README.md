@@ -87,14 +87,14 @@ Keyport has no taskbar button (it's just a floating ring), so it lives in your
 
 ## Running Keyport
 
-### 🪟 Windows
+### Windows
 
 - Run the installer (`Keyport_…_x64-setup.exe`) or the standalone `keyport.exe` —
   no admin needed.
 - Works on Windows 10/11 (the WebView2 runtime it uses is already installed;
   the installer fetches it if not).
 
-### 🐧 Linux
+### Linux
 
 - Install the **`.deb`** (Debian/Ubuntu) or run the **`.AppImage`**, or just run
   the built `keyport` binary.
@@ -106,14 +106,14 @@ Keyport has no taskbar button (it's just a floating ring), so it lives in your
 
 ## Platform notes
 
-### 🪟 Windows
+### Windows
 
 - **Installed-apps list** comes from your **Start-Menu shortcuts**.
 - **Always on top:** the ring floats above normal and full-screen-*windowed*
   apps. A game in *true exclusive full-screen* may cover it — that's an OS
   limitation, not a bug.
 
-### 🐧 Linux
+### Linux
 
 - **Installed-apps list** comes from your **`.desktop` entries** (system, user,
   and Flatpak apps).
