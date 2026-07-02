@@ -37,6 +37,7 @@
           <div class="segment">
             <button class="seg-btn active" data-kind="folder">Folder</button>
             <button class="seg-btn" data-kind="app">App</button>
+            <button class="seg-btn" data-kind="file">File</button>
           </div>
 
           <div id="folder-pane" class="pane">
@@ -48,6 +49,11 @@
             <input id="app-search" class="text-input" placeholder="Search installed apps…" />
             <div id="app-list" class="app-list"></div>
             <div id="app-selected" class="selected-path muted">No app selected</div>
+          </div>
+
+          <div id="file-pane" class="pane hidden">
+            <button id="browse-file-btn" class="btn-ghost">Browse file…</button>
+            <div id="file-path" class="selected-path muted">No file selected</div>
           </div>
 
           <button id="add-btn" class="btn-primary">Add shortcut</button>

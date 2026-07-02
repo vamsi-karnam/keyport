@@ -453,6 +453,7 @@ html, body {
 .sc-kind { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); }
 .sc-kind.folder { color: #9ecbff; }
 .sc-kind.app { color: #f6dd8c; }
+.sc-kind.file { color: #8fe6cf; }
 
 /* misc */
 .row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

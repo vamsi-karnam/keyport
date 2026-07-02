@@ -7,14 +7,14 @@ use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
-/// A single shortcut: a 5-character key that opens either a folder or an app.
+/// A single shortcut: a 5-character key that opens a folder, an app, or a file.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Shortcut {
     /// Exactly 5 chars, `[a-z0-9]`, unique across all shortcuts.
     pub key: String,
-    /// `"folder"` or `"app"`.
+    /// `"folder"`, `"app"`, or `"file"`.
     pub kind: String,
-    /// Absolute path to the folder, or to the app's `.lnk` / `.exe`.
+    /// Absolute path to the folder, the app's `.lnk` / `.exe`, or a file.
     pub target: String,
     /// Friendly label shown in the settings list (folder name or app name).
     pub label: String,

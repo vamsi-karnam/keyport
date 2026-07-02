@@ -1,5 +1,5 @@
-// Keyport — a tiny always-on-top portal that launches apps and folders from
-// 5-character keys. Prevent a console window from appearing in Windows release
+// Keyport — a tiny always-on-top portal that launches apps, folders, and files
+// from 5-character keys. Prevent a console window from appearing in Windows release
 // builds (no-op on other platforms).
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
@@ -39,12 +39,12 @@ fn add_shortcut(
 ) -> Result<Config, String> {
     let key = key.trim().to_lowercase();
     config::validate_key(&key)?;
-    if kind != "folder" && kind != "app" {
-        return Err("Shortcut kind must be 'folder' or 'app'.".into());
+    if kind != "folder" && kind != "app" && kind != "file" {
+        return Err("Shortcut kind must be 'folder', 'app', or 'file'.".into());
     }
     let target = target.trim().to_string();
     if target.is_empty() {
-        return Err("Please choose a folder or an app first.".into());
+        return Err("Please choose a folder, app, or file first.".into());
     }
 
     let mut cfg = config::load(&app);
@@ -123,6 +123,17 @@ fn pick_folder(app: AppHandle) -> Option<String> {
     app.dialog()
         .file()
         .blocking_pick_folder()
+        .and_then(|p| p.into_path().ok())
+        .map(|p| p.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn pick_file(app: AppHandle) -> Option<String> {
+    // No type filter — a file shortcut may point at any document, media, or
+    // other file; it opens with the OS default handler at launch time.
+    app.dialog()
+        .file()
+        .blocking_pick_file()
         .and_then(|p| p.into_path().ok())
         .map(|p| p.to_string_lossy().to_string())
 }
@@ -325,6 +336,7 @@ fn main() {
             open_shortcut,
             list_installed_apps,
             pick_folder,
+            pick_file,
             get_autostart,
             set_autostart,
             open_entry,

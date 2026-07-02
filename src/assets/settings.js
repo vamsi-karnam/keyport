@@ -1,4 +1,4 @@
-// Settings window: add/remove shortcuts, pick folders or installed apps,
+// Settings window: add/remove shortcuts, pick folders, installed apps, or files,
 // tune the ring size, and toggle start-on-login.
 const { invoke } = window.__TAURI__.core;
 
@@ -25,6 +25,7 @@ document.querySelectorAll(".seg-btn").forEach((b) => {
     selectedLabel = "";
     $("folder-pane").classList.toggle("hidden", kind !== "folder");
     $("app-pane").classList.toggle("hidden", kind !== "app");
+    $("file-pane").classList.toggle("hidden", kind !== "file");
     resetSelectionLabels();
     if (kind === "app" && apps.length === 0) loadApps();
   });
@@ -35,6 +36,8 @@ function resetSelectionLabels() {
   $("folder-path").classList.add("muted");
   $("app-selected").textContent = "No app selected";
   $("app-selected").classList.add("muted");
+  $("file-path").textContent = "No file selected";
+  $("file-path").classList.add("muted");
   document.querySelectorAll(".app-item").forEach((x) => x.classList.remove("sel"));
 }
 
@@ -46,6 +49,18 @@ $("browse-btn").addEventListener("click", async () => {
     selectedLabel = p.split(/[\\/]/).filter(Boolean).pop() || p;
     $("folder-path").textContent = p;
     $("folder-path").classList.remove("muted");
+  }
+});
+
+// ---- file picker ---------------------------------------------------------
+$("browse-file-btn").addEventListener("click", async () => {
+  const p = await invoke("pick_file");
+  if (p) {
+    selectedTarget = p;
+    // Keep the extension in the label so files read naturally (e.g. report.pdf).
+    selectedLabel = p.split(/[\\/]/).filter(Boolean).pop() || p;
+    $("file-path").textContent = p;
+    $("file-path").classList.remove("muted");
   }
 });
 
@@ -115,7 +130,9 @@ $("add-btn").addEventListener("click", async () => {
     return;
   }
   if (!selectedTarget) {
-    msg.textContent = kind === "folder" ? "Choose a folder first." : "Choose an app first.";
+    msg.textContent =
+      { folder: "Choose a folder first.", app: "Choose an app first.", file: "Choose a file first." }[kind] ||
+      "Choose a target first.";
     msg.className = "msg err";
     return;
   }
