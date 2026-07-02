@@ -12,16 +12,13 @@
 
 ## What is Keyport?
 
-Keyport is a portal — that floats in the corner of your
-screen and teleports you to a location of your choice on your PC. It stays out of your
-way until you need it.
+Somewhere along the way, our desktops got boring.
+We started focusing way too much on efficiency, and way less on having fun.
+Remember the Windows XP days? Apps with personality, tiny widgets, weird one-purpose tools someone built just because they could, little pets that wandered across your desktop. 
+Purely local, purely offline.
 
-Give any folder or app a short, memorable **5-character key** (like `a4g56`,
-`docs1`, or `spot5`). Then, whenever you want that thing, click the ring, type
-the key, and press **Enter** — the void spins up, pulls itself inward like a
-little black hole, and launches your target straight out of the portal.
-
-It's a keyboard-speed launcher with a bit of theatre. That's the whole idea.
+Keyport is a keyboard-speed launcher with a bit of theatre. That's the whole idea.
+Give any folder or app a short, memorable 5-character key (like a4g56, docs1, or spot5). Then, whenever you want that thing, launch Keyport and teleport to your next application adventure.
 
 Keyport runs on **Windows** and **Linux**.
 
