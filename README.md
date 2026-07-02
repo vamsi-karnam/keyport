@@ -25,6 +25,12 @@ It's a keyboard-speed launcher with a bit of theatre. That's the whole idea.
 
 Keyport runs on **Windows** and **Linux**.
 
+<div align="center">
+
+![Keyport in action — click the ring, type a key like web01 or vcode, and your app launches out of the portal](media/keyport-demo.gif)
+
+</div>
+
 ---
 
 ## Using Keyport
