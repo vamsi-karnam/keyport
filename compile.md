@@ -102,6 +102,15 @@ incremental and fast.
 
 ## 3. Build the release binary + installer
 
+> **The installer comes from `cargo tauri build`, which requires the Tauri CLI.**
+> Install it once if you haven't:
+> ```sh
+> cargo install tauri-cli --version "^2"
+> ```
+> ⚠️ Plain `cargo build --release` only produces the **standalone binary**
+> (`target/release/keyport(.exe)`) — it does **not** create the `bundle/nsis/…`
+> installer. You need `cargo tauri build` (Tauri CLI) for the installer/packages.
+
 ### 🪟 Windows
 
 ```powershell
