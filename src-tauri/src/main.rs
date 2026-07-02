@@ -235,6 +235,15 @@ fn open_settings_window(app: &AppHandle) {
 
 fn main() {
     tauri::Builder::default()
+        // Single instance MUST be registered first. If Keyport is already
+        // running, a second launch (e.g. clicking the icon again) fires this
+        // callback in the ORIGINAL instance and then exits — so no duplicate
+        // window. We use it to snap the ring back to its default corner.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = overlay::spawn_default(&w, &app.state::<Overlay>());
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,

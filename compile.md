@@ -191,11 +191,13 @@ strip = true        # strip debug symbols
 **Minimal dependencies / features** — only what the app uses:
 
 - `tauri` with just the **`tray-icon`** feature.
-- Two small plugins: `tauri-plugin-dialog` (folder picker) and
-  `tauri-plugin-autostart` (start-on-login).
+- Three small plugins: `tauri-plugin-dialog` (folder picker),
+  `tauri-plugin-autostart` (start-on-login), and `tauri-plugin-single-instance`
+  (prevents duplicate instances; a re-launch just resets the ring position).
 - No frontend framework, no bundler, no `node_modules`.
-- Launching + app discovery use the OS's own tools (`explorer.exe` / Start Menu
-  on Windows, `xdg-open` / `.desktop` files on Linux) — no heavy crates.
+- Launching + app discovery use the OS's own tools (`explorer.exe` + the shell
+  **AppsFolder** on Windows — which also covers Microsoft Store/UWP apps;
+  `xdg-open` / `.desktop` files on Linux) — no heavy crates.
 
 ### Tips to avoid accidental bloat
 
@@ -233,7 +235,7 @@ keyport/
 │  │  ├─ overlay.rs        #   the ring window state machine + geometry
 │  │  ├─ config.rs         #   shortcut storage + key validation
 │  │  ├─ launcher.rs       #   opens folders/apps (Windows + Linux)
-│  │  └─ apps.rs           #   installed-app enumeration (.lnk / .desktop)
+│  │  └─ apps.rs           #   installed-app enumeration (AppsFolder / .desktop)
 │  ├─ icons/               #   app + tray icons
 │  ├─ capabilities/        #   Tauri permission set
 │  ├─ Cargo.toml
