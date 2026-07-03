@@ -99,11 +99,14 @@ Keyport has no taskbar button (it's just a floating ring), so it lives in your
 
 ### Linux
 
-- Install the **`.deb`** (Debian/Ubuntu) or run the **`.AppImage`**, or just run
-  the built `keyport` binary.
+- Install the **`.deb`** with `sudo apt install ./keyport_*_amd64.deb` (the
+  leading `./` matters — it lets apt pull the WebKitGTK/`xdg-utils` dependencies
+  for you). If you install with `dpkg -i` and it complains about missing
+  dependencies, run `sudo apt --fix-broken install` to pull them in.
+- Alternatively run the **`.AppImage`**, or just run the built `keyport` binary.
 - You need a desktop with **WebKitGTK** (`libwebkit2gtk-4.1`) and **`xdg-utils`**
-  (both are standard on mainstream desktops). Works best on an **X11 (Xorg)**
-  session — see Platform notes.
+  (both are standard on mainstream desktops). Runs on both **X11** and
+  **Wayland** — see Platform notes for the Wayland details.
 
 ---
 
@@ -120,9 +123,26 @@ Keyport has no taskbar button (it's just a floating ring), so it lives in your
 
 - **Installed-apps list** comes from your **`.desktop` entries** (system, user,
   and Flatpak apps).
-- **Session:** Keyport behaves best on **X11**. On **Wayland**, the compositor
-  controls window placement, so the ring may not spawn in the corner, stay on
-  top, or drag as expected — log into an **Xorg** session for the intended feel.
+- **Session (X11 vs Wayland):** Keyport pins the ring by moving its own window,
+  which Wayland forbids for security reasons. To keep the ring, key box, and
+  launch effect working the same as on Windows, Keyport automatically routes
+  itself through **XWayland** (the X11 compatibility layer) when it detects a
+  Wayland session. This works out of the box on the **vast majority of desktops**
+  — GNOME, KDE Plasma, Cinnamon, and other mainstream environments all ship and
+  run XWayland by default (Ubuntu included), so no action is needed.
+  - **Edge cases where it may still misbehave:**
+    - **A pure-Wayland setup with XWayland removed/disabled** (some minimal or
+      "Wayland-only" configs, or custom `sway`/Hyprland setups without
+      `xwayland`). Symptoms: the ring jumps position, doesn't drag, or the launch
+      gravity effect draws off-screen. **Fix:** install/enable XWayland (e.g.
+      `sudo apt install xwayland`, or add `xwayland enable` to a sway config), or
+      simply launch Keyport from an **Xorg** login session.
+    - **Fractional/HiDPI scaling** (150%, 175%): via XWayland the ring can look
+      slightly softer than a native app. Cosmetic only — it stays fully
+      functional.
+  - You can override the auto-detection by setting `GDK_BACKEND` yourself before
+    launching (e.g. `GDK_BACKEND=wayland keyport` to force native Wayland, or
+    `GDK_BACKEND=x11 keyport` to force XWayland).
 - **Transparency** needs a running compositor (most desktops have one); without
   one the ring's background may look dark instead of see-through.
 - **System tray:** some desktops (notably **GNOME**) don't show tray icons

@@ -122,7 +122,7 @@ Outputs in `src-tauri/target/release/`:
 | Artifact | What it is |
 | --- | --- |
 | `keyport.exe` | The standalone app (needs the WebView2 runtime present) |
-| `bundle/nsis/Keyport_0.1.0_x64-setup.exe` | The **installer** to share |
+| `bundle/nsis/Keyport_0.4.1_x64-setup.exe` | The **installer** to share |
 
 The installer is **per-user** (no admin prompt) and uses the WebView2
 **download-bootstrapper**, so it stays tiny (~a few MB) instead of embedding the
@@ -141,8 +141,8 @@ Outputs in `src-tauri/target/release/`:
 | Artifact | What it is |
 | --- | --- |
 | `keyport` | The standalone binary (needs WebKitGTK present) |
-| `bundle/deb/keyport_0.1.0_amd64.deb` | Debian/Ubuntu installer |
-| `bundle/appimage/keyport_0.1.0_amd64.AppImage` | Portable single-file app |
+| `bundle/deb/keyport_0.4.1_amd64.deb` | Debian/Ubuntu installer |
+| `bundle/appimage/keyport_0.4.1_amd64.AppImage` | Portable single-file app |
 
 > Use `--bundles` to avoid pulling in packagers you don't have installed (e.g.
 > `rpm` needs `rpmbuild`). Omit it to let the config's `"all"` build everything
@@ -160,8 +160,8 @@ need both machines.
 To cut a release, push a version tag:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.4.1
+git push origin v0.4.1
 ```
 
 The workflow produces a **draft** release containing:
@@ -258,8 +258,12 @@ handy for catching cross-platform mistakes without both machines.
 
 - **First compile is slow** (the Tauri dependency tree is large). Subsequent
   builds are incremental and quick.
-- **Linux session:** the app targets **X11** for full behaviour. Under Wayland,
-  window positioning/always-on-top is restricted by the compositor.
+- **Linux session:** the overlay pins the ring by moving its own window, which
+  Wayland forbids. `main()` therefore auto-sets `GDK_BACKEND=x11` when it detects
+  a Wayland session with XWayland present, routing through XWayland where
+  positioning works (no-op on native X11; overridable by setting `GDK_BACKEND`
+  yourself). Works on virtually every mainstream desktop; only a pure-Wayland
+  setup with XWayland removed still degrades — see the README Platform notes.
 - **Linux runtime deps:** the `.deb` declares WebKitGTK; for a raw binary, ensure
   `libwebkit2gtk-4.1`, an appindicator library, and `xdg-utils` are present.
 - **Antivirus / unsigned binaries:** freshly built, unsigned executables can get

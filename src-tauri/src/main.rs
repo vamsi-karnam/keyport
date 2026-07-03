@@ -245,6 +245,24 @@ fn open_settings_window(app: &AppHandle) {
 }
 
 fn main() {
+    // Keyport's overlay pins the ring to a fixed on-screen anchor by moving and
+    // resizing its own window (see overlay.rs). Wayland forbids client-side
+    // window positioning, so on a Wayland session the ring jumps, vanishes, or
+    // the launch FX draws off-screen. Route through XWayland (the X11 backend),
+    // where positioning works exactly as it does on Windows. This must run
+    // before Tauri initialises GTK, is a no-op on native X11 sessions, and only
+    // triggers when XWayland is actually available to route to.
+    #[cfg(target_os = "linux")]
+    {
+        let on_wayland = std::env::var_os("WAYLAND_DISPLAY").is_some();
+        let backend_unset = std::env::var_os("GDK_BACKEND").is_none();
+        let xwayland_present = std::path::Path::new("/usr/bin/Xwayland").exists()
+            || std::path::Path::new("/usr/local/bin/Xwayland").exists();
+        if on_wayland && backend_unset && xwayland_present {
+            std::env::set_var("GDK_BACKEND", "x11");
+        }
+    }
+
     tauri::Builder::default()
         // Single instance MUST be registered first. If Keyport is already
         // running, a second launch (e.g. clicking the icon again) fires this
