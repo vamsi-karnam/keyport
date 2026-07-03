@@ -175,6 +175,22 @@ function submit() {
 
 // ------------------------------------------------------------- launch -------
 
+// Wait for the webview to report its fullscreen dimensions before drawing, so
+// the effect is centred on the real (post-resize) window. Resolves once the
+// width stops changing, or after a short safety timeout.
+function waitForResize() {
+  return new Promise((resolve) => {
+    let last = -1, stable = 0;
+    const t0 = performance.now();
+    (function poll() {
+      const w = window.innerWidth;
+      if (w === last) stable += 1; else { stable = 0; last = w; }
+      if (stable >= 3 || performance.now() - t0 > 800) resolve();
+      else requestAnimationFrame(poll);
+    })();
+  });
+}
+
 async function launch(key) {
   mode = "launch";
   entry.classList.remove("show");
@@ -191,12 +207,25 @@ async function launch(key) {
     return;
   }
 
-  // Re-centre the ring on its real screen position within the fullscreen window.
-  setRingPos(layout.center_x, layout.center_y);
+  // Where the gravity well forms within the overlay:
+  //  * Windows/macOS: the ring's real screen position (`center_x/y`).
+  //  * Linux/Wayland: the centre of the compositor-fullscreen window, computed
+  //    here from innerWidth after the resize lands (positions aren't knowable).
+  let cx, cy;
+  if (layout.centered) {
+    await waitForResize();
+    cx = window.innerWidth / 2;
+    cy = window.innerHeight / 2;
+  } else {
+    cx = layout.center_x;
+    cy = layout.center_y;
+  }
+  const center = { x: cx, y: cy };
+  setRingPos(cx, cy);
 
-  await window.Vacuum.suck(layout, ringPx);
+  await window.Vacuum.suck(center, ringPx);
   try { await invoke("open_shortcut", { key }); } catch (e) { console.error(e); }
-  await window.Vacuum.spit(layout);
+  await window.Vacuum.spit(center);
   try { await invoke("finish_launch"); } catch (e) {}
 
   ring.classList.remove("launching");

@@ -123,26 +123,20 @@ Keyport has no taskbar button (it's just a floating ring), so it lives in your
 
 - **Installed-apps list** comes from your **`.desktop` entries** (system, user,
   and Flatpak apps).
-- **Session (X11 vs Wayland):** Keyport pins the ring by moving its own window,
-  which Wayland forbids for security reasons. To keep the ring, key box, and
-  launch effect working the same as on Windows, Keyport automatically routes
-  itself through **XWayland** (the X11 compatibility layer) when it detects a
-  Wayland session. This works out of the box on the **vast majority of desktops**
-  — GNOME, KDE Plasma, Cinnamon, and other mainstream environments all ship and
-  run XWayland by default (Ubuntu included), so no action is needed.
-  - **Edge cases where it may still misbehave:**
-    - **A pure-Wayland setup with XWayland removed/disabled** (some minimal or
-      "Wayland-only" configs, or custom `sway`/Hyprland setups without
-      `xwayland`). Symptoms: the ring jumps position, doesn't drag, or the launch
-      gravity effect draws off-screen. **Fix:** install/enable XWayland (e.g.
-      `sudo apt install xwayland`, or add `xwayland enable` to a sway config), or
-      simply launch Keyport from an **Xorg** login session.
-    - **Fractional/HiDPI scaling** (150%, 175%): via XWayland the ring can look
-      slightly softer than a native app. Cosmetic only — it stays fully
-      functional.
-  - You can override the auto-detection by setting `GDK_BACKEND` yourself before
-    launching (e.g. `GDK_BACKEND=wayland keyport` to force native Wayland, or
-    `GDK_BACKEND=x11 keyport` to force XWayland).
+- **Session (X11 & Wayland):** Keyport runs natively on both, and renders
+  crisply on **HiDPI and mixed-DPI multi-monitor** setups (each monitor at its
+  own scale). Wayland forbids apps from setting their own window position, so
+  Keyport is written to not depend on it: the launch gravity effect uses
+  **compositor fullscreen** (reliable on any monitor) with the well drawn at
+  screen centre, and the key box grows in place — nothing jumps off-screen.
+  - **One Wayland-only difference (by design):** because the compositor won't
+    reveal the ring's on-screen position, the launch effect **centres on screen**
+    (the ring glides to the middle for the animation) rather than forming at the
+    ring's corner as it does on Windows/X11. The app still opens exactly the same.
+  - **Window placement** (initial corner, "Reset ring position") is
+    compositor-controlled on Wayland — if the ring doesn't start where you want,
+    just **drag it** (dragging works). On an **X11/Xorg** session it spawns in the
+    corner as on Windows.
 - **Transparency** needs a running compositor (most desktops have one); without
   one the ring's background may look dark instead of see-through.
 - **System tray:** some desktops (notably **GNOME**) don't show tray icons

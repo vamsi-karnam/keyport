@@ -92,6 +92,12 @@ pub struct LaunchLayout {
     pub center_y: f64,
     pub width: f64,
     pub height: f64,
+    /// When true (Linux/Wayland), the overlay was made fullscreen by the
+    /// compositor and the effect must be drawn at the window centre computed in
+    /// the webview (`center_x/y` are unused). When false (Windows/macOS), the
+    /// overlay was pinned to the monitor origin and `center_x/y` give the ring's
+    /// real position within it.
+    pub centered: bool,
 }
 
 fn logical_pos(win: &WebviewWindow) -> Result<(f64, f64), String> {
@@ -174,98 +180,161 @@ pub fn apply_ring_size(win: &WebviewWindow, overlay: &Overlay, size: f64) -> Res
 }
 
 /// Grow the idle window into the key-entry window, keeping the ring on its anchor.
+///
+/// Windows/macOS: the ring stays pinned to a fixed screen anchor and the window
+/// grows toward the screen centre so the key box is fully visible.
+///
+/// Linux/Wayland: absolute window positioning is unavailable, so instead of
+/// re-anchoring we keep the ring where it is (top-left of the grown window, at
+/// its idle offset) and grow the window in place; the key box is placed just
+/// below the ring. This keeps the ring from jumping and works identically on
+/// single- and multi-monitor setups because it needs no screen coordinates.
 pub fn open_entry(win: &WebviewWindow, overlay: &Overlay) -> Result<EntryLayout, String> {
     let (_idle, pad, entry_w, entry_h) = overlay.dims();
-    let (wx, wy) = logical_pos(win)?;
-    let anchor = (wx + pad, wy + pad); // ring centre while idle
-    let (mx, my, mw, mh) = monitor_rect(win)?;
-    let center_x = mx + mw / 2.0;
-    let center_y = my + mh / 2.0;
-    let right = anchor.0 >= center_x;
-    let bottom = anchor.1 >= center_y;
 
-    // Grow toward the screen centre so the key box is always fully visible.
-    let (corner, ring_x, ring_y) = match (bottom, right) {
-        (true, true) => ("br", entry_w - pad, entry_h - pad),
-        (true, false) => ("bl", pad, entry_h - pad),
-        (false, true) => ("tr", entry_w - pad, pad),
-        (false, false) => ("tl", pad, pad),
-    };
+    if cfg!(target_os = "linux") {
+        // Wayland: grow in place, ring stays put, key box drops just below it.
+        win.set_size(LogicalSize::new(entry_w, entry_h))
+            .map_err(|e| e.to_string())?;
+        *overlay.ring_offset.lock().unwrap() = (pad, pad);
+        overlay.set_mode(Mode::Entry);
+        Ok(EntryLayout {
+            corner: "tl".into(),
+            ring_x: pad,
+            ring_y: pad,
+            width: entry_w,
+            height: entry_h,
+        })
+    } else {
+        let (wx, wy) = logical_pos(win)?;
+        let anchor = (wx + pad, wy + pad); // ring centre while idle
+        let (mx, my, mw, mh) = monitor_rect(win)?;
+        let center_x = mx + mw / 2.0;
+        let center_y = my + mh / 2.0;
+        let right = anchor.0 >= center_x;
+        let bottom = anchor.1 >= center_y;
 
-    let mut nx = anchor.0 - ring_x;
-    let mut ny = anchor.1 - ring_y;
-    nx = nx.clamp(mx, (mx + mw - entry_w).max(mx));
-    ny = ny.clamp(my, (my + mh - entry_h).max(my));
+        // Grow toward the screen centre so the key box is always fully visible.
+        let (corner, ring_x, ring_y) = match (bottom, right) {
+            (true, true) => ("br", entry_w - pad, entry_h - pad),
+            (true, false) => ("bl", pad, entry_h - pad),
+            (false, true) => ("tr", entry_w - pad, pad),
+            (false, false) => ("tl", pad, pad),
+        };
 
-    win.set_size(LogicalSize::new(entry_w, entry_h))
-        .map_err(|e| e.to_string())?;
-    win.set_position(LogicalPosition::new(nx, ny))
-        .map_err(|e| e.to_string())?;
+        let mut nx = anchor.0 - ring_x;
+        let mut ny = anchor.1 - ring_y;
+        nx = nx.clamp(mx, (mx + mw - entry_w).max(mx));
+        ny = ny.clamp(my, (my + mh - entry_h).max(my));
 
-    *overlay.ring_offset.lock().unwrap() = (ring_x, ring_y);
-    overlay.set_mode(Mode::Entry);
+        win.set_size(LogicalSize::new(entry_w, entry_h))
+            .map_err(|e| e.to_string())?;
+        win.set_position(LogicalPosition::new(nx, ny))
+            .map_err(|e| e.to_string())?;
 
-    Ok(EntryLayout {
-        corner: corner.into(),
-        ring_x,
-        ring_y,
-        width: entry_w,
-        height: entry_h,
-    })
+        *overlay.ring_offset.lock().unwrap() = (ring_x, ring_y);
+        overlay.set_mode(Mode::Entry);
+
+        Ok(EntryLayout {
+            corner: corner.into(),
+            ring_x,
+            ring_y,
+            width: entry_w,
+            height: entry_h,
+        })
+    }
 }
 
 /// Collapse back to the idle window, keeping the ring on its anchor.
 pub fn close_entry(win: &WebviewWindow, overlay: &Overlay) -> Result<(), String> {
     let (idle, pad, _, _) = overlay.dims();
-    let (wx, wy) = logical_pos(win)?;
-    let (rx, ry) = *overlay.ring_offset.lock().unwrap();
-    let anchor = (wx + rx, wy + ry);
-    win.set_size(LogicalSize::new(idle, idle))
-        .map_err(|e| e.to_string())?;
-    win.set_position(LogicalPosition::new(anchor.0 - pad, anchor.1 - pad))
-        .map_err(|e| e.to_string())?;
+
+    if cfg!(target_os = "linux") {
+        // Shrink in place; the ring stays at its idle offset (no repositioning).
+        win.set_size(LogicalSize::new(idle, idle))
+            .map_err(|e| e.to_string())?;
+    } else {
+        let (wx, wy) = logical_pos(win)?;
+        let (rx, ry) = *overlay.ring_offset.lock().unwrap();
+        let anchor = (wx + rx, wy + ry);
+        win.set_size(LogicalSize::new(idle, idle))
+            .map_err(|e| e.to_string())?;
+        win.set_position(LogicalPosition::new(anchor.0 - pad, anchor.1 - pad))
+            .map_err(|e| e.to_string())?;
+    }
     *overlay.ring_offset.lock().unwrap() = (pad, pad);
     overlay.set_mode(Mode::Idle);
     Ok(())
 }
 
 /// Expand to a fullscreen, click-through overlay for the launch animation.
+///
+/// Windows/macOS: resize to the monitor rect and pin to its origin, so the well
+/// can be drawn at the ring's real position within the overlay.
+///
+/// Linux/Wayland: absolute positioning is unavailable and XWayland can't render
+/// per-monitor HiDPI, so we ask the *compositor* for fullscreen (which it
+/// honours, on whichever monitor the ring is on, rendered at that monitor's true
+/// scale) and let the webview draw the well at the window centre. This is
+/// monitor-agnostic: single-monitor, multi-monitor, and mixed-DPI all use it.
 pub fn start_launch(win: &WebviewWindow, overlay: &Overlay) -> Result<LaunchLayout, String> {
-    let (wx, wy) = logical_pos(win)?;
-    let (rx, ry) = *overlay.ring_offset.lock().unwrap();
-    let anchor = (wx + rx, wy + ry); // ring centre on screen right now
-    *overlay.launch_anchor.lock().unwrap() = anchor;
-
-    let (mx, my, mw, mh) = monitor_rect(win)?;
-
     // Click-through first, so the moment we cover the screen nothing is blocked.
     win.set_ignore_cursor_events(true)
         .map_err(|e| e.to_string())?;
-    win.set_size(LogicalSize::new(mw, mh))
-        .map_err(|e| e.to_string())?;
-    win.set_position(LogicalPosition::new(mx, my))
-        .map_err(|e| e.to_string())?;
-
     overlay.set_mode(Mode::Launch);
 
-    Ok(LaunchLayout {
-        center_x: anchor.0 - mx,
-        center_y: anchor.1 - my,
-        width: mw,
-        height: mh,
-    })
+    if cfg!(target_os = "linux") {
+        win.set_fullscreen(true).map_err(|e| e.to_string())?;
+        // center_x/y are computed in the webview from innerWidth; report the
+        // centered flag so the frontend knows which path to take.
+        Ok(LaunchLayout {
+            center_x: 0.0,
+            center_y: 0.0,
+            width: 0.0,
+            height: 0.0,
+            centered: true,
+        })
+    } else {
+        let (wx, wy) = logical_pos(win)?;
+        let (rx, ry) = *overlay.ring_offset.lock().unwrap();
+        let anchor = (wx + rx, wy + ry); // ring centre on screen right now
+        *overlay.launch_anchor.lock().unwrap() = anchor;
+
+        let (mx, my, mw, mh) = monitor_rect(win)?;
+        win.set_size(LogicalSize::new(mw, mh))
+            .map_err(|e| e.to_string())?;
+        win.set_position(LogicalPosition::new(mx, my))
+            .map_err(|e| e.to_string())?;
+
+        Ok(LaunchLayout {
+            center_x: anchor.0 - mx,
+            center_y: anchor.1 - my,
+            width: mw,
+            height: mh,
+            centered: false,
+        })
+    }
 }
 
 /// Tear down the fullscreen overlay and restore the idle ring in place.
 pub fn finish_launch(win: &WebviewWindow, overlay: &Overlay) -> Result<(), String> {
     let (idle, pad, _, _) = overlay.dims();
-    let (ax, ay) = *overlay.launch_anchor.lock().unwrap();
     win.set_ignore_cursor_events(false)
         .map_err(|e| e.to_string())?;
-    win.set_size(LogicalSize::new(idle, idle))
-        .map_err(|e| e.to_string())?;
-    win.set_position(LogicalPosition::new(ax - pad, ay - pad))
-        .map_err(|e| e.to_string())?;
+
+    if cfg!(target_os = "linux") {
+        // Leave fullscreen and return to the idle ring size; the compositor
+        // restores placement (no client-side positioning available/needed).
+        win.set_fullscreen(false).map_err(|e| e.to_string())?;
+        win.set_size(LogicalSize::new(idle, idle))
+            .map_err(|e| e.to_string())?;
+    } else {
+        let (ax, ay) = *overlay.launch_anchor.lock().unwrap();
+        win.set_size(LogicalSize::new(idle, idle))
+            .map_err(|e| e.to_string())?;
+        win.set_position(LogicalPosition::new(ax - pad, ay - pad))
+            .map_err(|e| e.to_string())?;
+    }
     *overlay.ring_offset.lock().unwrap() = (pad, pad);
     overlay.set_mode(Mode::Idle);
     Ok(())

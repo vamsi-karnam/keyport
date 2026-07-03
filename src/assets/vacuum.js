@@ -16,12 +16,14 @@
   function smooth(p) { return p * p * (3 - 2 * p); }
 
   // Inward pull + accelerating spiral over ~2.6s.
-  function suck(layout, ringPx) {
+  // `center` is {x, y} in CSS px within the overlay window (screen-relative on
+  // Windows; window-centre on Linux/Wayland — the caller decides).
+  function suck(center, ringPx) {
     return new Promise((resolve) => {
       canvas.classList.remove("hidden");
       fit();
-      const cx = layout.center_x;
-      const cy = layout.center_y;
+      const cx = center.x;
+      const cy = center.y;
       const R = Math.max(150, ringPx * 9); // confined pull radius
       const DURATION = 2600;
 
@@ -112,10 +114,10 @@
   }
 
   // Outward burst as the app/folder is "spat out" (~0.5s).
-  function spit(layout) {
+  function spit(center) {
     return new Promise((resolve) => {
-      const cx = layout.center_x;
-      const cy = layout.center_y;
+      const cx = center.x;
+      const cy = center.y;
       const DURATION = 520;
       const parts = [];
       for (let i = 0; i < 90; i++) {

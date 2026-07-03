@@ -122,7 +122,7 @@ Outputs in `src-tauri/target/release/`:
 | Artifact | What it is |
 | --- | --- |
 | `keyport.exe` | The standalone app (needs the WebView2 runtime present) |
-| `bundle/nsis/Keyport_0.4.1_x64-setup.exe` | The **installer** to share |
+| `bundle/nsis/Keyport_0.4.2_x64-setup.exe` | The **installer** to share |
 
 The installer is **per-user** (no admin prompt) and uses the WebView2
 **download-bootstrapper**, so it stays tiny (~a few MB) instead of embedding the
@@ -141,8 +141,8 @@ Outputs in `src-tauri/target/release/`:
 | Artifact | What it is |
 | --- | --- |
 | `keyport` | The standalone binary (needs WebKitGTK present) |
-| `bundle/deb/keyport_0.4.1_amd64.deb` | Debian/Ubuntu installer |
-| `bundle/appimage/keyport_0.4.1_amd64.AppImage` | Portable single-file app |
+| `bundle/deb/keyport_0.4.2_amd64.deb` | Debian/Ubuntu installer |
+| `bundle/appimage/keyport_0.4.2_amd64.AppImage` | Portable single-file app |
 
 > Use `--bundles` to avoid pulling in packagers you don't have installed (e.g.
 > `rpm` needs `rpmbuild`). Omit it to let the config's `"all"` build everything
@@ -160,8 +160,8 @@ need both machines.
 To cut a release, push a version tag:
 
 ```sh
-git tag v0.4.1
-git push origin v0.4.1
+git tag v0.4.2
+git push origin v0.4.2
 ```
 
 The workflow produces a **draft** release containing:
@@ -258,12 +258,15 @@ handy for catching cross-platform mistakes without both machines.
 
 - **First compile is slow** (the Tauri dependency tree is large). Subsequent
   builds are incremental and quick.
-- **Linux session:** the overlay pins the ring by moving its own window, which
-  Wayland forbids. `main()` therefore auto-sets `GDK_BACKEND=x11` when it detects
-  a Wayland session with XWayland present, routing through XWayland where
-  positioning works (no-op on native X11; overridable by setting `GDK_BACKEND`
-  yourself). Works on virtually every mainstream desktop; only a pure-Wayland
-  setup with XWayland removed still degrades — see the README Platform notes.
+- **Linux session:** Keyport runs on the **native Wayland** backend (we do *not*
+  force `GDK_BACKEND=x11`, because XWayland can't render per-monitor HiDPI and
+  would pixelate the ring/effect on scaled monitors). Wayland forbids client-side
+  window positioning, so the overlay is written to not need it: the launch effect
+  uses compositor fullscreen and draws at the window centre (`start_launch` in
+  `overlay.rs`), and the key box grows in place. This is monitor-agnostic —
+  single, multi, and mixed-DPI all use the same path. The only Wayland-visible
+  difference is that the launch effect centres on screen instead of at the ring's
+  corner (see the README Platform notes).
 - **Linux runtime deps:** the `.deb` declares WebKitGTK; for a raw binary, ensure
   `libwebkit2gtk-4.1`, an appindicator library, and `xdg-utils` are present.
 - **Antivirus / unsigned binaries:** freshly built, unsigned executables can get
