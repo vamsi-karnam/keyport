@@ -39,12 +39,12 @@ fn add_shortcut(
 ) -> Result<Config, String> {
     let key = key.trim().to_lowercase();
     config::validate_key(&key)?;
-    if kind != "folder" && kind != "app" && kind != "file" {
-        return Err("Shortcut kind must be 'folder', 'app', or 'file'.".into());
+    if kind != "folder" && kind != "app" && kind != "file" && kind != "web" {
+        return Err("Shortcut kind must be 'folder', 'app', 'file', or 'web'.".into());
     }
     let target = target.trim().to_string();
     if target.is_empty() {
-        return Err("Please choose a folder, app, or file first.".into());
+        return Err("Please choose a folder, app, or file, or enter a website URL first.".into());
     }
 
     let mut cfg = config::load(&app);

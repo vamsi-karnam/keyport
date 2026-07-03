@@ -454,6 +454,7 @@ html, body {
 .sc-kind.folder { color: #9ecbff; }
 .sc-kind.app { color: #f6dd8c; }
 .sc-kind.file { color: #8fe6cf; }
+.sc-kind.web { color: #c9b8ff; }
 
 /* misc */
 .row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

@@ -26,6 +26,7 @@ document.querySelectorAll(".seg-btn").forEach((b) => {
     $("folder-pane").classList.toggle("hidden", kind !== "folder");
     $("app-pane").classList.toggle("hidden", kind !== "app");
     $("file-pane").classList.toggle("hidden", kind !== "file");
+    $("web-pane").classList.toggle("hidden", kind !== "web");
     resetSelectionLabels();
     if (kind === "app" && apps.length === 0) loadApps();
   });
@@ -38,6 +39,7 @@ function resetSelectionLabels() {
   $("app-selected").classList.add("muted");
   $("file-path").textContent = "No file selected";
   $("file-path").classList.add("muted");
+  $("web-url").value = "";
   document.querySelectorAll(".app-item").forEach((x) => x.classList.remove("sel"));
 }
 
@@ -62,6 +64,16 @@ $("browse-file-btn").addEventListener("click", async () => {
     $("file-path").textContent = p;
     $("file-path").classList.remove("muted");
   }
+});
+
+// ---- website URL ---------------------------------------------------------
+$("web-url").addEventListener("input", () => {
+  const raw = $("web-url").value.trim();
+  if (!raw) { selectedTarget = ""; selectedLabel = ""; return; }
+  // Default to https:// when no scheme is given, so it opens as a URL (not a search).
+  const url = /:\/\//.test(raw) ? raw : "https://" + raw;
+  selectedTarget = url;
+  try { selectedLabel = new URL(url).hostname || url; } catch { selectedLabel = raw; }
 });
 
 // ---- installed apps ------------------------------------------------------
@@ -131,7 +143,7 @@ $("add-btn").addEventListener("click", async () => {
   }
   if (!selectedTarget) {
     msg.textContent =
-      { folder: "Choose a folder first.", app: "Choose an app first.", file: "Choose a file first." }[kind] ||
+      { folder: "Choose a folder first.", app: "Choose an app first.", file: "Choose a file first.", web: "Enter a website URL first." }[kind] ||
       "Choose a target first.";
     msg.className = "msg err";
     return;

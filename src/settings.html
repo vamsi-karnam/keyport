@@ -38,6 +38,7 @@
             <button class="seg-btn active" data-kind="folder">Folder</button>
             <button class="seg-btn" data-kind="app">App</button>
             <button class="seg-btn" data-kind="file">File</button>
+            <button class="seg-btn" data-kind="web">Web</button>
           </div>
 
           <div id="folder-pane" class="pane">
@@ -54,6 +55,11 @@
           <div id="file-pane" class="pane hidden">
             <button id="browse-file-btn" class="btn-ghost">Browse file…</button>
             <div id="file-path" class="selected-path muted">No file selected</div>
+          </div>
+
+          <div id="web-pane" class="pane hidden">
+            <input id="web-url" class="text-input" placeholder="https://example.com"
+              spellcheck="false" autocomplete="off" autocapitalize="off" />
           </div>
 
           <button id="add-btn" class="btn-primary">Add shortcut</button>

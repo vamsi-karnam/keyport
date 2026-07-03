@@ -2,7 +2,7 @@
 
 # 🌀 Keyport
 
-**A tiny portal that lives on your desktop and opens your favourite folders, apps, and files from a 5-character key.**
+**A tiny portal that lives on your desktop and opens your favourite folders, apps, files, and websites from a 5-character key.**
 
 *A fun, lightweight little companion that sits quietly in the corner of your screen ready to teleport you to your next adventure.*
 
@@ -53,7 +53,7 @@ primary screen and stays **on top of everything**.
 2. **Type** your 5-character key. The box turns **green** when it matches a
    shortcut, **red** when it doesn't.
 3. Press **Enter** (or click **Enter**). The portal winds up into a vacuum for a
-   few seconds, then launches your folder, app, or file.
+   few seconds, then launches your folder, app, file, or website.
 
 If a key doesn't match anything, the box gives a little shake — nothing opens.
 
@@ -64,9 +64,10 @@ Settings. In the settings window you can:
 
 - **Add a shortcut** — pick a 5-character key, then choose one of:
   - **Folder** — browse to any folder on your PC,
-  - **App** — search your installed apps and pick one, or
+  - **App** — search your installed apps and pick one,
   - **File** — browse to any file (a document, PDF, image, video…); it opens in
-    whatever app your system uses for that file type.
+    whatever app your system uses for that file type, or
+  - **Web** — enter a website URL; it opens in your default browser.
 - **See and remove** your existing shortcuts.
 - **Resize the ring** with the slider, if you'd like it bigger or smaller.
 - **Start on login** — toggle whether Keyport launches when you log in.
@@ -141,5 +142,6 @@ everything else on screen stays fully clickable the whole time.)*
 - `spot5` → Spotify · `code1` → your editor · `mail0` → your mail app
 - `dwnld` → your Downloads folder · `proj7` → a project folder · `scrns` → Screenshots
 - `cv001` → your résumé PDF · `notes` → a notes doc · `song1` → a favourite track (files)
+- `gh001` → a GitHub repo · `maps1` → Google Maps · `yt001` → YouTube (websites)
 
 Have fun. 🌀
