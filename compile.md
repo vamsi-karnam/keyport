@@ -76,7 +76,7 @@ sudo dnf install \
 ```
 
 *(`xdg-utils` is a **runtime** dependency too — Keyport uses `xdg-open` to open
-folders. `libayatana-appindicator3` provides the tray icon.)*
+folders, files, and URLs. `libayatana-appindicator3` provides the tray icon.)*
 
 Verify (either OS):
 
@@ -234,7 +234,7 @@ keyport/
 │  │  ├─ main.rs           #   app setup, tray, autostart, command wiring
 │  │  ├─ overlay.rs        #   the ring window state machine + geometry
 │  │  ├─ config.rs         #   shortcut storage + key validation
-│  │  ├─ launcher.rs       #   opens folders/apps (Windows + Linux)
+│  │  ├─ launcher.rs       #   opens folders/apps/files/URLs (Windows + Linux)
 │  │  └─ apps.rs           #   installed-app enumeration (AppsFolder / .desktop)
 │  ├─ icons/               #   app + tray icons
 │  ├─ capabilities/        #   Tauri permission set

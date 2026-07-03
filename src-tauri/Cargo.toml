@@ -1,7 +1,7 @@
 [package]
 name = "keyport"
 version = "0.1.0"
-description = "A tiny always-on-top portal that launches apps, folders, and files from 5-character keys"
+description = "A tiny always-on-top portal that launches apps, folders, files, and websites from 5-character keys"
 authors = ["Keyport"]
 edition = "2021"
 rust-version = "1.77"

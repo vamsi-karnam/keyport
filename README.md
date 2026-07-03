@@ -18,7 +18,7 @@ Remember the Windows XP days? Apps with personality, tiny widgets, weird one-pur
 Purely local, purely offline.
 
 Keyport is a keyboard-speed launcher with a bit of theatre. That's the whole idea.
-Give any folder or app a short, memorable 5-character key (like a4g56, docs1, or spot5). Then, whenever you want that thing, launch Keyport and teleport to your next application adventure.
+Give any folder, app, file, or website a short, memorable 5-character key (like a4g56, docs1, or spot5). Then, whenever you want that thing, launch Keyport and teleport to your next application adventure.
 
 Keyport runs on **Windows** and **Linux**.
 

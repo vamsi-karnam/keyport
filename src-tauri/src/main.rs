@@ -1,5 +1,5 @@
-// Keyport — a tiny always-on-top portal that launches apps, folders, and files
-// from 5-character keys. Prevent a console window from appearing in Windows release
+// Keyport — a tiny always-on-top portal that launches apps, folders, files, and
+// websites from 5-character keys. Prevent a console window from appearing in Windows release
 // builds (no-op on other platforms).
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
